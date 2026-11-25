@@ -1,0 +1,62 @@
+CREATE DATABASE IF NOT EXISTS farm_management;
+USE farm_management;
+
+CREATE TABLE IF NOT EXISTS farmer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    aadhaar VARCHAR(100),
+    phone VARCHAR(20),
+    farming_type VARCHAR(50),
+    address VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS produc (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS farmer_records (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    aadhaar VARCHAR(255),
+    phone VARCHAR(255),
+    farming_type VARCHAR(50),
+    address VARCHAR(255),
+    action VARCHAR(50),
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+DROP TRIGGER IF EXISTS after_farmer_insert;
+CREATE TRIGGER after_farmer_insert
+AFTER INSERT ON farmer
+FOR EACH ROW
+INSERT INTO farmer_records (name, aadhaar, phone, farming_type, address, action)
+VALUES (NEW.name, NEW.aadhaar, NEW.phone, NEW.farming_type, NEW.address, 'Registered');
+
+DROP TRIGGER IF EXISTS after_farmer_update;
+CREATE TRIGGER after_farmer_update
+AFTER UPDATE ON farmer
+FOR EACH ROW
+INSERT INTO farmer_records (name, aadhaar, phone, farming_type, address, action)
+VALUES (NEW.name, NEW.aadhaar, NEW.phone, NEW.farming_type, NEW.address, 'Updated');
+
+DROP TRIGGER IF EXISTS after_farmer_delete;
+CREATE TRIGGER after_farmer_delete
+AFTER DELETE ON farmer
+FOR EACH ROW
+INSERT INTO farmer_records (name, aadhaar, phone, farming_type, address, action)
+VALUES (OLD.name, OLD.aadhaar, OLD.phone, OLD.farming_type, OLD.address, 'Deleted');
+
+CREATE OR REPLACE VIEW v_agro_products_summary AS
+SELECT
+    id,
+    product_name,
+    price,
+    email,
+    created_at
+FROM produc;
